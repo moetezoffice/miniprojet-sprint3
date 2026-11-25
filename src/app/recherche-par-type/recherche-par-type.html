@@ -1,5 +1,8 @@
 <section class="atelier-search">
   <h2>Recherche par type</h2>
+  @if (erreur) {
+    <p class="alert alert-danger" role="alert">{{ erreur }}</p>
+  }
 
   <div class="search-control">
     <label for="plantType" class="form-label">Type</label>

@@ -12,18 +12,18 @@ import { PlantesService } from '../service/plantes.service';
   styleUrl: './recherche-par-type.css',
 })
 export class RechercheParTypeComponent implements OnInit {
-  protected types: Type[];
+  protected types: Type[] = [];
   protected plantes: Plante[] = [];
   protected idType: number | null = null;
+  protected erreur = '';
 
   private readonly plantesService = inject(PlantesService);
 
-  constructor() {
-    this.types = this.plantesService.listetypes();
-  }
-
   ngOnInit(): void {
-    this.plantesService.charger().subscribe();
+    this.plantesService.chargerTypes().subscribe({
+      next: (types) => { this.types = types; },
+      error: () => { this.erreur = 'Impossible de charger les types depuis le backend.'; },
+    });
   }
 
   protected onChange(): void {
@@ -32,8 +32,10 @@ export class RechercheParTypeComponent implements OnInit {
       return;
     }
 
-    this.plantesService.rechercherParType(this.idType).subscribe((plantes) => {
-      this.plantes = plantes;
+    this.erreur = '';
+    this.plantesService.rechercherParType(this.idType).subscribe({
+      next: (plantes) => { this.plantes = plantes; },
+      error: () => { this.erreur = 'Recherche impossible. Vérifiez le backend.'; },
     });
   }
 }

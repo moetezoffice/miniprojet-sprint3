@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { Type } from '../models/type.model';
@@ -10,19 +10,22 @@ import { PlantesService } from '../service/plantes.service';
   templateUrl: './add-plante.html',
   styleUrl: './add-plante.css',
 })
-export class AddPlante {
+export class AddPlante implements OnInit {
   protected nom = '';
   protected prix: number | null = null;
   protected dateCreation = new Date().toISOString().slice(0, 10);
-  protected types: Type[];
+  protected types: Type[] = [];
   protected typeId = 1;
   protected erreur = '';
 
   private readonly plantesService = inject(PlantesService);
   private readonly router = inject(Router);
 
-  constructor() {
-    this.types = this.plantesService.listetypes();
+  ngOnInit(): void {
+    this.plantesService.chargerTypes().subscribe({
+      next: (types) => { this.types = types; },
+      error: () => { this.erreur = 'Impossible de charger les types depuis le backend.'; },
+    });
   }
 
   protected ajouterPlante(): void {

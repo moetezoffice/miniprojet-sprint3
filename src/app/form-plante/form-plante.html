@@ -1,0 +1,46 @@
+@if (erreurTypes) {
+  <p class="alert alert-danger" role="alert">{{ erreurTypes }}</p>
+}
+
+<form class="row g-3" (ngSubmit)="sauvegarder()">
+  @if (!ajout) {
+    <div class="col-sm-3">
+      <label for="planteId" class="form-label">ID</label>
+      <input id="planteId" class="form-control" type="number" [value]="plante.id" readonly />
+    </div>
+  }
+
+  <div class="col-sm-6">
+    <label for="planteNom" class="form-label">Nom</label>
+    <input id="planteNom" class="form-control" name="nom" [(ngModel)]="nom" required maxlength="80"
+      placeholder="Nom de la plante" />
+  </div>
+
+  <div class="col-sm-3">
+    <label for="plantePrix" class="form-label">Prix</label>
+    <input id="plantePrix" class="form-control" name="prix" type="number" [(ngModel)]="prix"
+      min="0" step="0.01" required />
+  </div>
+
+  <div class="col-sm-4">
+    <label for="planteDate" class="form-label">Date de création</label>
+    <input id="planteDate" class="form-control" name="dateCreation" type="date"
+      [(ngModel)]="dateCreation" required />
+  </div>
+
+  <div class="col-sm-5">
+    <label for="planteType" class="form-label">Type</label>
+    <select id="planteType" class="form-select" name="typeId" [(ngModel)]="typeId" required>
+      @for (type of types; track type.id) {
+        <option [ngValue]="type.id">{{ type.nom }}</option>
+      }
+    </select>
+  </div>
+
+  <div class="col-12 d-flex gap-2">
+    <button class="btn btn-success" type="submit"
+      [disabled]="!types.length || !nom.trim() || prix === null || prix < 0 || !dateCreation">
+      {{ ajout ? 'Ajouter' : 'Modifier' }}
+    </button>
+  </div>
+</form>

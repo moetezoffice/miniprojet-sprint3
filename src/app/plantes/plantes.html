@@ -6,6 +6,25 @@
     <p class="alert alert-danger" role="alert">{{ erreur }}</p>
   }
 
+  @if (authService.isAdmin()) {
+    <section class="card shadow-sm mb-3">
+      <div class="card-body p-3 p-lg-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h1 class="h4 mb-0">{{ modeAjout ? 'Ajouter une plante' : 'Modifier une plante' }}</h1>
+          @if (!modeAjout) {
+            <button class="btn btn-outline-secondary btn-sm" type="button" (click)="annulerModification()">
+              Annuler
+            </button>
+          }
+        </div>
+        <app-form-plante
+          [plante]="planteFormulaire"
+          [ajout]="modeAjout"
+          (planteSaved)="enregistrerPlante($event)" />
+      </div>
+    </section>
+  }
+
   <section class="card shadow-sm">
     <div class="card-body p-3 p-lg-4">
       @if (chargement) {
@@ -19,6 +38,7 @@
                 <th scope="col">Nom</th>
                 <th scope="col">Prix</th>
                 <th scope="col">Date Création</th>
+                <th scope="col">Type</th>
                 @if (authService.isAdmin()) {
                   <th scope="col" aria-label="Supprimer"></th>
                   <th scope="col" aria-label="Modifier"></th>
@@ -32,18 +52,19 @@
                   <td>{{ plante.nom }}</td>
                   <td>{{ plante.prix }}</td>
                   <td>{{ plante.dateCreation | date:'dd/MM/yyyy' }}</td>
+                  <td>{{ plante.type.nom }}</td>
                   @if (authService.isAdmin()) {
                     <td>
                       <button class="btn btn-danger" type="button" (click)="supprimerPlante(plante)">Supprimer</button>
                     </td>
                     <td>
-                      <a class="btn btn-success" [routerLink]="['/edit-plante', plante.id]">Modifier</a>
+                      <button class="btn btn-success" type="button" (click)="selectionnerPlante(plante)">Modifier</button>
                     </td>
                   }
                 </tr>
               } @empty {
                 <tr>
-                  <td [attr.colspan]="authService.isAdmin() ? 6 : 4" class="text-center text-muted py-4">
+                  <td [attr.colspan]="authService.isAdmin() ? 7 : 5" class="text-center text-muted py-4">
                     Aucune plante à afficher.
                   </td>
                 </tr>

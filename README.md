@@ -1,17 +1,17 @@
-# Gestion des plantes
+# Mes Plantes
 
-Application Angular simple de gestion de plantes connectée au backend fourni dans `api_rest_produits.jar`. Le backend garde les données sous la forme de produits (`nomProduit`, `prixProduit`); l'interface les présente comme des plantes.
+Application Angular avec un backend Spring Boot et une base MySQL. Le modèle existant est conservé : `Plante` possède un `Type`; les types et plantes sont enregistrés en base.
 
 ## Démarrage
 
-1. Démarrer MySQL. Le JAR utilise la base `demo_DB`, l'utilisateur `root` et aucun mot de passe.
-2. Démarrer le backend dans un terminal:
+1. Démarrer MySQL. Par défaut, l'application utilise `root` sans mot de passe et crée la base `mes_plantes` si nécessaire.
+2. Depuis le dossier `backend`, démarrer l'API :
 
    ```powershell
-   java -Dserver.port=8090 -jar C:\Users\PCMike\Downloads\api_rest_produits.jar
+   mvn spring-boot:run
    ```
 
-3. Dans un autre terminal, lancer Angular depuis le dossier `MesPlantes`:
+3. Depuis la racine du projet, démarrer Angular dans un autre terminal :
 
    ```powershell
    npm install
@@ -20,28 +20,63 @@ Application Angular simple de gestion de plantes connectée au backend fourni da
 
 4. Ouvrir <http://localhost:4200/>.
 
-L'API utilisee par Angular est <http://localhost:8090/produits/api>. Le JAR est demarre sur le port 8090 dans les commandes ci-dessus.
+L'API écoute sur le port 8090 et utilise le préfixe `/produits`. Les identifiants MySQL peuvent être remplacés avec `DB_URL`, `DB_USERNAME` et `DB_PASSWORD`. La première exécution enregistre les trois types de plantes connus de l'interface.
 
-## API à vérifier avec Postman
+## Comptes de démonstration
 
-- `GET http://localhost:8090/produits/api` : lister les plantes
-- `GET http://localhost:8090/produits/api/2` : consulter l'identifiant 2
-- `POST http://localhost:8090/produits/api` avec le corps JSON `{"nomProduit":"Basilic","prixProduit":8}` : ajouter
-- `PUT http://localhost:8090/produits/api` avec le corps JSON `{"idProduit":2,"nomProduit":"Basilic","prixProduit":10,"dateCreation":"2026-11-13T00:00:00.000Z"}` : modifier
-- `DELETE http://localhost:8090/produits/api/5` : supprimer l'identifiant 5
+- Administrateur : `admin` / `123`
+- Utilisateur : `moetez` / `123`
 
-La page affiche l'état de connexion en cas d'indisponibilité du backend. Les modifications sont enregistrées dans la base par l'API.
+Ces comptes sont gardés en mémoire par le backend pour l'atelier JWT. Leurs identifiants peuvent être remplacés par `ADMIN_USERNAME`, `ADMIN_PASSWORD`, `USER_USERNAME` et `USER_PASSWORD`.
 
-## Authentification et droits
+## JWT et autorisations
 
-- Compte administrateur : `admin` / `123`
-- Compte utilisateur : `moetez` / `123`
-- Les deux comptes peuvent consulter la liste. Seul `admin` peut ajouter, modifier ou supprimer des plantes.
-- La session est restauree depuis le stockage local. La deconnexion efface cette session.
-- Les routes de gestion sont protegees par un guard d'administrateur; une route protegee est redirigee vers la page de connexion ou d'acces refuse.
+La page de connexion envoie le nom utilisateur et le mot de passe à `POST /produits/auth/login`. Spring Security vérifie les identifiants, puis signe un JWT contenant le nom utilisateur, les rôles et une date d'expiration. Angular conserve le jeton pendant la session et l'ajoute aux requêtes API sous la forme `Authorization: Bearer <jeton>`.
 
-Ces comptes sont des comptes de demonstration definis dans le frontend pour l'atelier.
+Les utilisateurs authentifiés peuvent lire les plantes et les types. Seul le rôle administrateur peut créer, modifier ou supprimer les données. Les guards Angular masquent les écrans réservés à l'administrateur, mais c'est le backend qui applique réellement les droits. Le jeton expire après 60 minutes par défaut; la durée se règle avec `JWT_EXPIRATION_MINUTES`. Pour une utilisation hors atelier, définir `JWT_SECRET` avec une clé secrète propre et changer les mots de passe de démonstration.
 
-## Types et donnees de plantes
+Le JWT est sans session serveur : la déconnexion supprime le jeton du navigateur. Un jeton déjà copié reste utilisable jusqu'à son expiration; l'application ne gère pas de renouvellement ni de révocation des jetons.
 
-La base conserve maintenant les exemples de plantes : Monstera deliciosa, Ficus elastica, Aloe vera, Basilic, Romarin, Lavande et Menthe. Le JAR fourni expose les champs produit (nom, prix et date), mais pas les types. Les choix de type (plantes d'interieur, succulentes, plantes aromatiques) sont donc conserves dans le stockage local du navigateur pour l'interface.
+## API REST de l'application
+
+Toutes les routes de gestion nécessitent un jeton valide.
+
+| Méthode | Route | Droit | Fonction |
+| --- | --- | --- | --- |
+| `POST` | `/produits/auth/login` | Public | Ouvrir une session et recevoir un JWT |
+| `GET` | `/produits/api` | Utilisateur connecté | Lister les plantes |
+| `GET` | `/produits/api/{id}` | Utilisateur connecté | Consulter une plante |
+| `POST` | `/produits/api` | Administrateur | Créer une plante |
+| `PUT` | `/produits/api/{id}` | Administrateur | Modifier une plante |
+| `DELETE` | `/produits/api/{id}` | Administrateur | Supprimer une plante |
+| `GET` | `/produits/api/prodscat/{typeId}` | Utilisateur connecté | Filtrer par type |
+| `GET` | `/produits/api/rechercheParNom?nom=aloe` | Utilisateur connecté | Rechercher par nom |
+| `GET` | `/produits/api/rechercheParPrix?nom=aloe&prix=20` | Utilisateur connecté | Rechercher par nom et prix minimal |
+| `GET` | `/produits/api/trieNom` | Utilisateur connecté | Trier par nom |
+| `GET` | `/produits/api/trieNomPrix` | Utilisateur connecté | Trier par nom puis prix décroissant |
+
+Exemple de création :
+
+```json
+{
+  "nom": "Aloe vera",
+  "prix": 18.5,
+  "dateCreation": "2026-11-24T00:00:00.000Z",
+  "typeId": 2
+}
+```
+
+## Spring Data REST
+
+Les dépôts exposent aussi les ressources HAL de Spring Data REST :
+
+- `GET /produits/plantes`
+- `GET /produits/plantes?size=2&page=0&sort=nom,desc`
+- `GET /produits/plantes/search/findByNomContaining?nom=aloe`
+- `GET /produits/plantes/search/findByTypeId?id=2`
+- `GET /produits/plantes?projection=resumePlante`
+- `GET /produits/types?size=100`
+
+Angular charge les types depuis cette dernière ressource au format `_embedded.types`. Les identifiants sont exposés par la configuration Spring Data REST.
+
+Les ressources Spring Data REST appliquent les mêmes règles d'accès : lecture pour les utilisateurs connectés, écriture pour l'administrateur.

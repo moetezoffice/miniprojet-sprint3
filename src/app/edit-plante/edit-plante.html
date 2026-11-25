@@ -29,7 +29,7 @@
       </select>
 
       <div class="actions">
-        <button type="submit" [disabled]="!nom.trim() || prix === null || prix < 0">Enregistrer</button>
+      <button type="submit" [disabled]="!types.length || !nom.trim() || prix === null || prix < 0">Enregistrer</button>
         <a routerLink="/plantes">Annuler</a>
       </div>
     </form>

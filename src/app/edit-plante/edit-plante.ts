@@ -16,7 +16,7 @@ export class EditPlante implements OnInit {
   protected nom = '';
   protected prix: number | null = null;
   protected dateCreation = '';
-  protected types: Type[];
+  protected types: Type[] = [];
   protected typeId = 1;
   protected chargement = true;
   protected erreur = '';
@@ -25,11 +25,11 @@ export class EditPlante implements OnInit {
   private readonly router = inject(Router);
   private readonly plantesService = inject(PlantesService);
 
-  constructor() {
-    this.types = this.plantesService.listetypes();
-  }
-
   ngOnInit(): void {
+    this.plantesService.chargerTypes().subscribe({
+      next: (types) => { this.types = types; },
+      error: () => { this.erreur = 'Impossible de charger les types depuis le backend.'; },
+    });
     const id = Number(this.route.snapshot.paramMap.get('id'));
     if (!Number.isInteger(id) || id < 1) {
       void this.router.navigate(['/plantes']);
@@ -52,13 +52,15 @@ export class EditPlante implements OnInit {
   }
 
   protected modifierPlante(): void {
-    if (!this.plante || !this.nom.trim() || this.prix === null || this.prix < 0 || !this.dateCreation) return;
+    if (!this.plante || !this.types.length || !this.nom.trim() || this.prix === null || this.prix < 0 || !this.dateCreation) return;
+    const type = this.types.find((element) => element.id === Number(this.typeId));
+    if (!type) return;
     const planteModifiee: Plante = {
       ...this.plante,
       nom: this.nom.trim(),
       prix: this.prix,
-      dateCreation: new Date(`${this.dateCreation}T00:00:00`).toISOString(),
-      type: this.types.find((type) => type.id === Number(this.typeId)) ?? this.types[0],
+      dateCreation: `${this.dateCreation}T00:00:00.000Z`,
+      type,
     };
 
     this.plantesService.modifier(planteModifiee).subscribe({

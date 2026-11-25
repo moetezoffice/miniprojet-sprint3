@@ -16,6 +16,6 @@ export const routes: Routes = [
   { path: 'rechercheParType', component: RechercheParTypeComponent, canActivate: [authGuard] },
   { path: 'add-plante', component: AddPlante, canActivate: [adminGuard] },
   { path: 'edit-plante/:id', component: EditPlante, canActivate: [adminGuard] },
-  { path: '', redirectTo: 'plantes', pathMatch: 'full' },
-  { path: '**', redirectTo: 'plantes' },
+  { path: '', redirectTo: 'login', pathMatch: 'full' },
+  { path: '**', redirectTo: 'login' },
 ];

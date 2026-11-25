@@ -18,7 +18,10 @@ export class LoginComponent {
   private readonly router = inject(Router);
 
   protected onLoggedin(): void {
-    this.erreur = !this.authService.signIn(this.user);
-    if (!this.erreur) void this.router.navigate(['/plantes']);
+    this.erreur = false;
+    this.authService.signIn(this.user).subscribe({
+      next: () => { void this.router.navigate(['/plantes']); },
+      error: () => { this.erreur = true; },
+    });
   }
 }

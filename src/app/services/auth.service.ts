@@ -1,15 +1,24 @@
+import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Router } from '@angular/router';
+import { Observable, map, tap } from 'rxjs';
 import { User } from '../models/user.model';
+
+interface LoginResponse {
+  accessToken: string;
+  expiresAt: string;
+  username: string;
+  roles: string[];
+}
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
+  private readonly http = inject(HttpClient);
   private readonly router = inject(Router);
-  private readonly users: User[] = [
-    { username: 'admin', password: '123', roles: ['ADMIN'] },
-    { username: 'moetez', password: '123', roles: ['USER'] },
-  ];
+  private readonly apiUrl = 'http://localhost:8090/produits/auth/login';
+  private readonly tokenStorageKey = 'mesPlantes.accessToken';
 
+  accessToken: string | null = null;
   loggedUser: string | null = null;
   isloggedIn = false;
   roles: string[] = [];
@@ -18,26 +27,15 @@ export class AuthService {
     this.restoreSession();
   }
 
-  signIn(user: Pick<User, 'username' | 'password'>): boolean {
-    const validUser = this.users.find(
-      (candidate) => candidate.username === user.username && candidate.password === user.password,
+  signIn(user: Pick<User, 'username' | 'password'>): Observable<void> {
+    return this.http.post<LoginResponse>(this.apiUrl, user).pipe(
+      tap((response) => this.storeSession(response)),
+      map(() => undefined),
     );
-    if (!validUser) return false;
-
-    this.loggedUser = validUser.username;
-    this.isloggedIn = true;
-    this.roles = [...validUser.roles];
-    localStorage.setItem('loggedUser', validUser.username);
-    localStorage.setItem('isloggedIn', 'true');
-    return true;
   }
 
   logout(): void {
-    this.loggedUser = null;
-    this.isloggedIn = false;
-    this.roles = [];
-    localStorage.removeItem('loggedUser');
-    localStorage.setItem('isloggedIn', 'false');
+    this.clearSession();
     void this.router.navigate(['/login']);
   }
 
@@ -46,23 +44,50 @@ export class AuthService {
   }
 
   restoreSession(): void {
-    const isLoggedIn = localStorage.getItem('isloggedIn') === 'true';
-    const username = localStorage.getItem('loggedUser');
-    const validUser = isLoggedIn && username
-      ? this.users.find((user) => user.username === username)
-      : undefined;
-
-    if (!validUser) {
-      this.loggedUser = null;
-      this.isloggedIn = false;
-      this.roles = [];
+    const token = localStorage.getItem(this.tokenStorageKey);
+    if (!token) {
       localStorage.removeItem('loggedUser');
-      localStorage.setItem('isloggedIn', 'false');
+      localStorage.removeItem('isloggedIn');
       return;
     }
 
-    this.loggedUser = validUser.username;
+    try {
+      const segment = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+      const payload = JSON.parse(atob(segment + '='.repeat((4 - segment.length % 4) % 4))) as {
+        sub?: string;
+        exp?: number;
+        roles?: string[];
+      };
+      if (!payload.sub || !payload.exp || payload.exp * 1000 <= Date.now()) {
+        this.clearSession();
+        return;
+      }
+      this.accessToken = token;
+      this.loggedUser = payload.sub;
+      this.roles = Array.isArray(payload.roles) ? payload.roles : [];
+      this.isloggedIn = true;
+    } catch {
+      this.clearSession();
+    }
+  }
+
+  private storeSession(response: LoginResponse): void {
+    this.accessToken = response.accessToken;
+    this.loggedUser = response.username;
+    this.roles = [...response.roles];
     this.isloggedIn = true;
-    this.roles = [...validUser.roles];
+    localStorage.setItem(this.tokenStorageKey, response.accessToken);
+    localStorage.removeItem('loggedUser');
+    localStorage.removeItem('isloggedIn');
+  }
+
+  private clearSession(): void {
+    this.accessToken = null;
+    this.loggedUser = null;
+    this.roles = [];
+    this.isloggedIn = false;
+    localStorage.removeItem(this.tokenStorageKey);
+    localStorage.removeItem('loggedUser');
+    localStorage.removeItem('isloggedIn');
   }
 }
