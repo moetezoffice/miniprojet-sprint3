@@ -11,9 +11,10 @@ Application Angular avec un backend Spring Boot et une base MySQL. Le modèle ex
    mvn spring-boot:run
    ```
 
-3. Depuis la racine du projet, démarrer Angular dans un autre terminal :
+3. Depuis le dossier `frontend`, démarrer Angular dans un autre terminal :
 
    ```powershell
+   cd frontend
    npm install
    npm start
    ```
