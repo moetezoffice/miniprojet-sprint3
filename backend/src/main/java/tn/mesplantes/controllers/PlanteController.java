@@ -71,7 +71,7 @@ public class PlanteController {
 
     @GetMapping("/rechercheParPrix")
     public List<Plante> searchByNameAndPrice(@RequestParam("nom") String nom,
-                                             @RequestParam("prix") java.math.BigDecimal prix) {
+                                             @RequestParam("prix") Double prix) {
         return planteService.findByNomEtPrix(nom, prix);
     }
 

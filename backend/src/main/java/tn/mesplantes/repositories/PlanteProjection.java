@@ -4,8 +4,7 @@ import org.springframework.data.rest.core.config.Projection;
 import tn.mesplantes.entities.Plante;
 import tn.mesplantes.entities.Type;
 
-import java.math.BigDecimal;
-import java.time.Instant;
+import java.time.LocalDate;
 
 @Projection(name = "resumePlante", types = Plante.class)
 public interface PlanteProjection {
@@ -13,9 +12,9 @@ public interface PlanteProjection {
 
     String getNom();
 
-    BigDecimal getPrix();
+    Double getPrix();
 
-    Instant getDateCreation();
+    LocalDate getDateCreation();
 
     Type getType();
 }

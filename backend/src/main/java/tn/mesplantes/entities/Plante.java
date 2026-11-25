@@ -1,6 +1,7 @@
 package tn.mesplantes.entities;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.Column;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -10,31 +11,30 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 
-import java.math.BigDecimal;
-import java.time.Instant;
+import java.time.LocalDate;
 
 @Entity
-@Table(name = "plantes")
+@Table(name = "produit")
 public class Plante {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_produit")
     private Long id;
 
+    @Column(name = "nom_produit")
     @NotBlank
     private String nom;
 
-    @NotNull
     @DecimalMin("0.0")
-    private BigDecimal prix;
+    @Column(name = "prix_produit")
+    private Double prix;
 
-    @NotNull
-    private Instant dateCreation;
+    @Column(name = "date_creation")
+    private LocalDate dateCreation;
 
-    @NotNull
-    @ManyToOne(fetch = FetchType.EAGER, optional = false)
-    @JoinColumn(name = "type_id", nullable = false)
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "categorie_id_cat")
     private Type type;
 
     public Plante() {
@@ -56,19 +56,19 @@ public class Plante {
         this.nom = nom;
     }
 
-    public BigDecimal getPrix() {
+    public Double getPrix() {
         return prix;
     }
 
-    public void setPrix(BigDecimal prix) {
+    public void setPrix(Double prix) {
         this.prix = prix;
     }
 
-    public Instant getDateCreation() {
+    public LocalDate getDateCreation() {
         return dateCreation;
     }
 
-    public void setDateCreation(Instant dateCreation) {
+    public void setDateCreation(LocalDate dateCreation) {
         this.dateCreation = dateCreation;
     }
 

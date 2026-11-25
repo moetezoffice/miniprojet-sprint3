@@ -1,10 +1,10 @@
 # Mes Plantes
 
-Application Angular avec un backend Spring Boot et une base MySQL. Le modèle existant est conservé : `Plante` possède un `Type`; les types et plantes sont enregistrés en base.
+Application Angular avec un backend Spring Boot et une base MySQL. Le modèle existant est conservé : `Plante` possède un `Type`; les types et plantes sont enregistrés en base. Le backend utilise par défaut la base existante `demo_DB` sur `localhost:3306` et relie les anciennes lignes de la table `produit` aux types.
 
 ## Démarrage
 
-1. Démarrer MySQL. Par défaut, l'application utilise `root` sans mot de passe et crée la base `mes_plantes` si nécessaire.
+1. Démarrer MySQL. Par défaut, l'application utilise `root` sans mot de passe et la base `demo_DB`.
 2. Depuis le dossier `backend`, démarrer l'API :
 
    ```powershell
@@ -21,7 +21,7 @@ Application Angular avec un backend Spring Boot et une base MySQL. Le modèle ex
 
 4. Ouvrir <http://localhost:4200/>.
 
-L'API écoute sur le port 8090 et utilise le préfixe `/produits`. Les identifiants MySQL peuvent être remplacés avec `DB_URL`, `DB_USERNAME` et `DB_PASSWORD`. La première exécution enregistre les trois types de plantes connus de l'interface.
+L'API écoute sur le port 8090 et utilise le préfixe `/produits`. Les identifiants MySQL peuvent être remplacés avec `DB_URL`, `DB_USERNAME` et `DB_PASSWORD`. La première exécution enregistre les trois types et rattache les plantes existantes à un type selon leur nom si leur catégorie est vide.
 
 ## Comptes de démonstration
 
@@ -62,7 +62,7 @@ Exemple de création :
 {
   "nom": "Aloe vera",
   "prix": 18.5,
-  "dateCreation": "2026-11-24T00:00:00.000Z",
+  "dateCreation": "2026-11-24",
   "typeId": 2
 }
 ```

@@ -8,7 +8,6 @@ import org.springframework.data.jpa.repository.Query;
 import tn.mesplantes.entities.Plante;
 import tn.mesplantes.entities.Type;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 @RepositoryRestResource(path = "plantes", collectionResourceRel = "plantes", excerptProjection = PlanteProjection.class)
@@ -25,7 +24,7 @@ public interface PlanteRepository extends JpaRepository<Plante, Long> {
     List<Plante> findByType(Type type);
 
     @Query("select p from Plante p where lower(p.nom) like lower(concat('%', :nom, '%')) and p.prix > :prix")
-    List<Plante> findByNomEtPrix(@Param("nom") String nom, @Param("prix") BigDecimal prix);
+    List<Plante> findByNomEtPrix(@Param("nom") String nom, @Param("prix") Double prix);
 
     List<Plante> findByOrderByNomAsc();
 

@@ -2,6 +2,7 @@ package tn.mesplantes.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Entity;
+import jakarta.persistence.Column;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -13,12 +14,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "types_plantes")
+@Table(name = "categorie")
 public class Type {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_cat")
     private Long id;
 
+    @Column(name = "nom_cat")
     @NotBlank
     private String nom;
 

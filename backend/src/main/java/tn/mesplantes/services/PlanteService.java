@@ -10,8 +10,7 @@ import tn.mesplantes.entities.Type;
 import tn.mesplantes.repositories.PlanteRepository;
 import tn.mesplantes.repositories.TypeRepository;
 
-import java.time.Instant;
-import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -76,7 +75,7 @@ public class PlanteService {
     }
 
     @Transactional(readOnly = true)
-    public List<Plante> findByNomEtPrix(String nom, BigDecimal prix) {
+    public List<Plante> findByNomEtPrix(String nom, Double prix) {
         return planteRepository.findByNomEtPrix(nom == null ? "" : nom.trim(), prix);
     }
 
@@ -95,7 +94,7 @@ public class PlanteService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Type inconnu"));
         plante.setNom(payload.nom().trim());
         plante.setPrix(payload.prix());
-        plante.setDateCreation(payload.dateCreation() == null ? Instant.now() : payload.dateCreation());
+        plante.setDateCreation(payload.dateCreation() == null ? LocalDate.now() : payload.dateCreation());
         plante.setType(type);
     }
 }
